@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root {
+  --black:#000; --gray:#666; --border:#e5e5e5;
+}
+*{box-sizing:border-box;font-family:system-ui}
+body{
+  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+}
+.container{width:380px;text-align:center}
+h1{margin-bottom:6px}
+p{color:var(--gray);font-size:14px}
+input,button{
+  width:100%;padding:16px;margin-top:12px;
+  border-radius:30px;border:1px solid var(--border);
+  font-size:14px;
+}
+button{cursor:pointer}
+button.primary{background:#000;color:#fff;border:none}
+button[disabled], button.primary[disabled] {
+  background: #6b6b6b !important;
+  color: #aaa !important;
+  border: 1px solid var(--border) !important;
+  cursor: not-allowed !important;
+}
+button:hover{background:#f5f5f5}
+button.primary:hover:not([disabled]){background:#191919}
+.toast-box {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 9999;
+  min-width: 300px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  background: #23272f;
+  color: #fff;
+  padding: 15px 28px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  min-width: 240px;
+  font-size: 15px;
+  box-shadow: 0 1px 10px 2px rgba(0,0,0,0.06);
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slidein 0.25s forwards;
+}
+.toast.success {
+  background: #4BB543;
+}
+.toast.error {
+  background: #ff4d4f;
+}
+@keyframes slidein {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Create account</h1>
+  <p>Sign up to continue</p>
+
+  <input id="username" placeholder="Username" oninput="updateSignupButton()">
+  <input id="email" placeholder="Email" oninput="updateSignupButton()">
+  <input id="first" placeholder="First name" oninput="updateSignupButton()">
+  <input id="last" placeholder="Last name (optional)">
+  <input id="password" type="password" placeholder="Password" oninput="updateSignupButton()">
+  <input id="age" placeholder="Age (optional)">
+  <input id="role" placeholder="Role (optional)">
+
+  <button class="primary" id="signupBtn" onclick="signup()" disabled>Create account</button>
+  <button onclick="location.href='login.html'">Back to login</button>
+</div>
+<div class="toast-box" id="toast-box"></div>
+
+<script>
+// This version saves users to a file called "user.json" using a POST - this only works if the backend supports it.
+
+async function fetchUsers() {
+  try {
+    // Attempt to get the file from the server (requires backend endpoint to support this)
+    const res = await fetch('user.json', {cache: "no-store"});
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+async function saveUsers(usersArr) {
+  // You need an endpoint (e.g., /save_users) on your backend to handle this!
+  try {
+    let res = await fetch('user.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(usersArr)
+    });
+    if (!res.ok) throw new Error('Failed to save');
+  } catch {
+    showToast('Could not save user data file. Backend required.', 'error');
+    throw new Error('Save failed');
+  }
+}
+
+// Generate unique user id (simple random + time method)
+function genUserId() {
+  const rand = Math.random().toString(36).substring(2,10);
+  const ms = Date.now().toString(36);
+  return "uid_" + rand + ms;
+}
+
+// Toast functions - ALL error/info/success go to top right as toast, not inline box
+function showToast(msg, type="success", cb=null) {
+  const toastBox = document.getElementById('toast-box');
+  while (toastBox.firstChild) toastBox.removeChild(toastBox.firstChild);
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerText = msg;
+  toastBox.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.opacity='0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(()=>{
+      toast.remove();
+      if(typeof cb === "function") cb();
+    },350);
+  }, 2200);
+}
+
+function requiredFieldsFilled() {
+  return (
+    document.getElementById('username').value.trim() &&
+    document.getElementById('email').value.trim() &&
+    document.getElementById('first').value.trim() &&
+    document.getElementById('password').value.trim()
+  );
+}
+
+function updateSignupButton() {
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = !requiredFieldsFilled();
+}
+
+function isEmailValid(emailValue) {
+  if (!emailValue.includes("@") || !emailValue.includes(".")) {
+    return false;
+  }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(emailValue);
+}
+
+async function signup(){
+  const userVal = username.value.trim();
+  const emailVal = email.value.trim();
+  const firstVal = first.value.trim();
+  const pwdVal = password.value.trim();
+
+  if(!userVal || !emailVal || !firstVal || !pwdVal){
+    showToast("Please fill in all required fields.","error");
+    updateSignupButton();
+    return;
+  }
+
+  if (!emailVal.includes("@") || !emailVal.includes(".")) {
+    showToast("Invalid Email", "error");
+    updateSignupButton();
+    return;
+  }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailPattern.test(emailVal)) {
+    showToast("Please enter a valid email address.", "error");
+    updateSignupButton();
+    return;
+  }
+
+  let u = await fetchUsers();
+  if(u.some(x=>x.email===emailVal)){
+    showToast("Email already exists", "error");
+    return;
+  }
+
+  const uniqueId = genUserId();
+  u.push({
+    id: uniqueId,
+    username: userVal,
+    email: emailVal,
+    first: firstVal,
+    last: last.value.trim() || "",
+    password: pwdVal,
+    age: age.value.trim()||null,
+    role: role.value.trim()||null
+  });
+
+  try {
+    await saveUsers(u);
+    showToast("Account created", "success", ()=>{location.href="login.html"});
+  } catch (e) {
+    // error shown in saveUsers
+  }
+}
+
+// All errors and info are toast only at top right, no inline box anymore
+
+window.addEventListener('DOMContentLoaded', updateSignupButton);
+</script>
+
+</body>
+
+<style>
+  /* Change text selection color to white with blur effect */
+  ::selection {
+    background: #ababab;
+    color: #1f1f1f;
+  }
+  </style>
+</html>

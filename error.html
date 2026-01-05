@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error Page</title>
+    <style>
+        @font-face {
+            font-family: 'BitmapFont';
+            src: url('BitmapFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            background-color: #000000;
+            color: #fff;
+            font-family: 'BitmapFont', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            position: relative;
+        }
+        .error-message {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 1;
+        }
+        .refresh-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 25px;
+            color: #000;
+            font-size: 0.8rem;
+            font-family: 'BitmapFont', Arial, sans-serif;
+            z-index: 1;
+        }
+        .refresh-button img {
+            width: 30px;
+            height: 30px;
+            filter: invert(1);
+            margin-right: 5px;
+        }
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-message" id="errorMessage">An error has occurred. Check You'r Internet connection.</div>
+    <button class="refresh-button" onclick="checkInternetAndRedirect();">
+        <img src="svg/refresh.svg" alt="Refresh">
+        Refresh
+    </button>
+    <iframe class="background-animation" src="animations/rain%20pattern.html" frameborder="0"></iframe>
+    <script>
+        setTimeout(() => {
+            document.querySelector('.background-animation').style.opacity = 1;
+        }, 1000);
+
+        // Checks for internet connectivity and redirects if online
+        function checkInternetAndRedirect() {
+            // First, check navigator.onLine for a quick offline check
+            if (!navigator.onLine) {
+                document.getElementById('errorMessage').textContent = "No internet connection. Please check your connection.";
+                return;
+            }
+            // Try to fetch a small resource to confirm connectivity
+            fetch("data.csv", { method: "HEAD", cache: "no-store" })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = "Main.html";
+                    } else {
+                        document.getElementById('errorMessage').textContent = "Internet connection not available or server unreachable.";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('errorMessage').textContent = "Internet connection not available or server unreachable.";
+                });
+        }
+    </script>
+</body>
+</html>
+
+<!-- select element color -->
+<style>
+  ::selection {
+    background: #fff;
+    color: #000;
+  }
+</style>
+
+<!-- -----------------------------------------------right click menu----------------------------------------------- -->
+
+<!-- Custom Right Click Menu HTML and CSS -->
+<style>
+  @font-face {
+    font-family: 'BitmapFont';
+    src: url('BitmapFont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  #customContextMenu {
+    display: none;
+    position: fixed;
+    z-index: 10001;
+    background: #fff;
+    color: #232323;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    min-width: 90px;
+    font-family: 'BitmapFont', Arial, sans-serif;
+    padding: 3px 4px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.18s 0.12s, width 0.32s cubic-bezier(.4,1.4,.6,1), height 0.32s cubic-bezier(.4,1.4,.6,1);
+    width: auto;
+    height: auto;
+    font-size: 0.82em;
+  }
+  #customContextMenu .menu-item {
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    user-select: none;
+    color: #232323;
+    border-radius: 8px;
+    margin: 3px 0;
+    font-size: 0.92em;
+    font-family: 'BitmapFont', Arial, sans-serif;
+  }
+  #customContextMenu .menu-item:hover {
+    background: #f0f0f0;
+    color: #727272;
+  }
+  #customContextMenu .menu-separator {
+    height: 1px;
+    background: linear-gradient(90deg, #e0e0e0 0%, #f5f5f5 100%);
+    margin: 4px 0;
+    border: none;
+    border-radius: 8px;
+  }
+
+  /* Square blur animation - blur only inside the square */
+  #contextSquare {
+    position: fixed;
+    z-index: 10000;
+    background: #fff;
+    border-radius: 8px;
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+    left: 0; top: 0;
+    opacity: 0;
+    transform: scale(1);
+    transition:
+      opacity 0.12s,
+      width 0.32s cubic-bezier(.4,1.4,.6,1),
+      height 0.32s cubic-bezier(.4,1.4,.6,1),
+      transform 0.32s cubic-bezier(.4,1.4,.6,1);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #contextSquare.active {
+    opacity: 1;
+  }
+  #contextSquare #sju-blur-text {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: 'BitmapFont', Arial, sans-serif;
+    font-size: 1.1em;
+    color: #232323;
+    filter: blur(5px);
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.18s;
+    z-index: 1;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 4px #fff, 0 0 8px #fff;
+  }
+  #contextSquare.show-blur-text #sju-blur-text {
+    opacity: 1;
+  }
+</style>
+
+<!-- Make the right click menu available on the whole page -->
+<div id="contextSquare">
+  <span id="sju-blur-text">sju</span>
+</div>
+<div id="customContextMenu">
+  <div class="menu-item" onclick="handleCopy()">Copy</div>
+  <div class="menu-item" onclick="handleShare()">Share</div>
+  <div class="menu-item" onclick="handleRefresh()">Refresh</div>
+  <div class="menu-item" onclick="handlePrint()">Print</div>
+</div>
+
+<script>
+  const menu = document.getElementById('customContextMenu');
+  const square = document.getElementById('contextSquare');
+  const sjuText = document.getElementById('sju-blur-text');
+
+  // Helper to get menu size (make square always a square, using max dimension)
+  function getMenuSize() {
+    menu.style.display = 'block';
+    menu.style.opacity = '0';
+    menu.style.left = '-9999px';
+    menu.style.top = '-9999px';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    const rect = menu.getBoundingClientRect();
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    const maxDim = Math.max(rect.width, rect.height);
+    return { width: maxDim, height: maxDim };
+  }
+
+  // Trigger context menu on the whole document
+  document.addEventListener('contextmenu', function(e) {
+    // Don't show custom menu if right-clicking on the menu itself
+    if (menu.contains(e.target)) return;
+
+    e.preventDefault();
+
+    // Hide menu and square if already visible
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.transition = 'none';
+    sjuText.style.opacity = '0';
+
+    // Get the position relative to the viewport
+    const relX = e.clientX;
+    const relY = e.clientY;
+
+    // Place the white square at mouse pointer, small size
+    square.style.position = 'fixed';
+    square.style.left = relX + 'px';
+    square.style.top = relY + 'px';
+    square.style.width = '16px';
+    square.style.height = '16px';
+    square.style.opacity = '1';
+    square.style.transform = 'scale(1)';
+    square.classList.add('active');
+    square.classList.remove('show-blur-text');
+    sjuText.style.opacity = '0';
+
+    // Calculate menu size for expansion (make square)
+    const menuSize = getMenuSize();
+    const expandSize = Math.max(70, menuSize.width + 12);
+
+    // Animate the square to expand at the pointer (no offset)
+    setTimeout(() => {
+      square.style.transition =
+        'width 0.32s cubic-bezier(.4,1.4,.6,1), ' +
+        'height 0.32s cubic-bezier(.4,1.4,.6,1), ' +
+        'opacity 0.12s, ' +
+        'transform 0.32s cubic-bezier(.4,1.4,.6,1)';
+      square.style.width = expandSize + 'px';
+      square.style.height = expandSize + 'px';
+      square.style.left = relX + 'px';
+      square.style.top = relY + 'px';
+      square.style.transformOrigin = 'top left';
+      square.style.transform = 'scale(1)';
+
+      // Show the blurred sju text as the square expands
+      setTimeout(() => {
+        square.classList.add('show-blur-text');
+      }, 60);
+
+      // After expansion, show the menu at the pointer (no offset)
+      setTimeout(() => {
+        // Position menu at the pointer, but keep inside viewport
+        let menuX = relX;
+        let menuY = relY;
+        if (menuX + expandSize > window.innerWidth) {
+          menuX = window.innerWidth - expandSize - 4;
+        }
+        if (menuY + expandSize > window.innerHeight) {
+          menuY = window.innerHeight - expandSize - 4;
+        }
+        menu.style.width = expandSize + 'px';
+        menu.style.height = expandSize + 'px';
+        menu.style.left = menuX + 'px';
+        menu.style.top = menuY + 'px';
+        menu.style.display = 'block';
+        setTimeout(() => {
+          menu.style.opacity = '1';
+        }, 10);
+
+        // Fade out the square and sju text after menu is visible
+        setTimeout(() => {
+          square.style.opacity = '0';
+          square.classList.remove('show-blur-text');
+        }, 80);
+      }, 220);
+    }, 8);
+  });
+
+  // Hide menu and square on click outside
+  document.addEventListener('mousedown', function(e) {
+    if (!menu.contains(e.target)) {
+      menu.style.display = 'none';
+      menu.style.opacity = '0';
+      menu.style.width = 'auto';
+      menu.style.height = 'auto';
+      square.classList.remove('active', 'show-blur-text');
+      square.style.opacity = '0';
+      sjuText.style.opacity = '0';
+    }
+  });
+
+  window.addEventListener('resize', function() {
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.opacity = '0';
+    sjuText.style.opacity = '0';
+  });
+
+  window.addEventListener('scroll', function() {
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.opacity = '0';
+    sjuText.style.opacity = '0';
+  });
+
+  // Custom menu actions
+  function handleCopy() {
+    let selectedText = window.getSelection().toString();
+    if (selectedText) {
+      navigator.clipboard.writeText(selectedText).then(() => {
+        console.log('Copied: ' + selectedText);
+      }, () => {
+        console.log('Copy failed.');
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        console.log('Page URL copied!');
+      }, () => {
+        console.log('Copy failed.');
+      });
+    }
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.opacity = '0';
+    sjuText.style.opacity = '0';
+  }
+
+  function handleShare() {
+    if (navigator.share) {
+      navigator.share({
+        title: document.title,
+        url: window.location.href
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        console.log('Page URL copied! (Share not supported)');
+      });
+    }
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.opacity = '0';
+    sjuText.style.opacity = '0';
+  }
+
+  // On right-click menu "Refresh", check internet and redirect if online
+  function handleRefresh() {
+    // Use the same logic as the main refresh button
+    if (!navigator.onLine) {
+      document.getElementById('errorMessage').textContent = "No internet connection. Please check your connection.";
+      hideContextMenu();
+      return;
+    }
+    fetch("data.csv", { method: "HEAD", cache: "no-store" })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = "Main.html";
+        } else {
+          document.getElementById('errorMessage').textContent = "Internet connection not available or server unreachable.";
+        }
+        hideContextMenu();
+      })
+      .catch(() => {
+        document.getElementById('errorMessage').textContent = "Internet connection not available or server unreachable.";
+        hideContextMenu();
+      });
+  }
+
+  function handlePrint() {
+    window.print();
+    hideContextMenu();
+  }
+
+  function hideContextMenu() {
+    menu.style.display = 'none';
+    menu.style.opacity = '0';
+    menu.style.width = 'auto';
+    menu.style.height = 'auto';
+    square.classList.remove('active', 'show-blur-text');
+    square.style.opacity = '0';
+    sjuText.style.opacity = '0';
+  }
+</script>

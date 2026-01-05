@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chat UI Clone</title>
+
+<style>
+::root {
+  --bg: #121212;
+  --sidebar: #0d0d0d;
+  --panel: #1e1e1e;
+  --border: #2a2a2a;
+  --text: #eaeaea;
+  --muted: #9a9a9a;
+  --accent: #1e90ff;
+  --radius: 18px;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ───────── Sidebar ───────── */
+.sidebar {
+  width: 250px;
+  background: var(--sidebar);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+
+.sidebar h1 {
+  font-size: 16px;
+  margin: 0 0 18px;
+  color: var(--text);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav button {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav button:hover {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.nav .icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* ───────── Main ───────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 32px;
+}
+
+/* ───────── Input Bar ───────── */
+.prompt {
+  width: min(720px, 92%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prompt button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: background .2s, color .2s;
+}
+
+.prompt button:hover {
+  background: #2a2a2a;
+  color: var(--text);
+}
+
+.prompt input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.send {
+  background: var(--accent);
+  color: #fff !important;
+}
+
+.send:hover {
+  filter: brightness(1.1);
+}
+
+/* ───────── Footer ───────── */
+.footer {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ───────── Animations ───────── */
+.prompt {
+  animation: pop 0.5s ease;
+}
+
+@keyframes pop {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h1 style="font-size: 2em;">NEXARA Studio</h1>
+    <div class="nav">
+      <button>
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M11 4H7.2C6.0799 4 5.51984 4 5.09202 4.21799C4.71569 4.40974 4.40973 4.7157 4.21799 5.09202C4 5.51985 4 6.0799 4 7.2V16.8C4 17.9201 4 18.4802 4.21799 18.908C4.40973 19.2843 4.71569 19.5903 5.09202 19.782C5.51984 20 6.0799 20 7.2 20H16.8C17.9201 20 18.4802 20 18.908 19.782C19.2843 19.5903 19.5903 19.2843 19.782 18.908C20 18.4802 20 17.9201 20 16.8V12.5M15.5 5.5L18.3284 8.32843M10.7627 10.2373L17.411 3.58902C18.192 2.80797 19.4584 2.80797 20.2394 3.58902C21.0205 4.37007 21.0205 5.6364 20.2394 6.41745L13.3774 13.2794C12.6158 14.0411 12.235 14.4219 11.8012 14.7247C11.4162 14.9936 11.0009 15.2162 10.564 15.3882C10.0717 15.582 9.54378 15.6885 8.48793 15.9016L8 16L8.04745 15.6678C8.21536 14.4925 8.29932 13.9048 8.49029 13.3561C8.65975 12.8692 8.89125 12.4063 9.17906 11.9786C9.50341 11.4966 9.92319 11.0768 10.7627 10.2373Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+        </span>
+        New chat
+      </button>
+      <button>
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+        </span>
+        Search chats
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="title">How can I help, <span id="username"></span>?</div>
+
+    <div id="chat-area" style="width:min(900px,92%);max-width:920px;display:flex;flex-direction:column;gap:12px;">
+      <div id="messages" style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;min-height:360px;max-height:62vh;overflow:auto;display:flex;flex-direction:column;gap:12px;">
+        <!-- messages will be appended here -->
+      </div>
+
+      <div class="prompt" style="position:sticky;bottom:0;background:transparent;padding:0;margin-top:6px;">
+        <button title="Add">＋</button>
+        <input id="chat-input" type="text" placeholder="Type a message…" />
+        <button class="send" title="Send">↑</button>
+      </div>
+    </div>
+  </main>
+
+  <div class="footer"><span id="fullname">user</span> · Go</div>
+
+</div>
+
+<script>
+function getLoggedInName() {
+  try {
+    if (window.currentUser && window.currentUser.name) return window.currentUser.name;
+    if (window.USER && window.USER.name) return window.USER.name;
+    const stored = localStorage.getItem("username") || sessionStorage.getItem("username");
+    if (stored) return stored;
+  } catch (e) {}
+  return "username";
+}
+
+const fullName = getLoggedInName();
+const shortName = fullName.split(" ")[0] || fullName;
+const usernameEl = document.getElementById("username");
+if (usernameEl) usernameEl.textContent = shortName;
+const fullnameEl = document.getElementById("fullname");
+if (fullnameEl) fullnameEl.textContent = fullName;
+
+const messagesEl = document.getElementById("messages");
+const inputEl = document.getElementById("chat-input");
+const sendBtn = document.querySelector(".send");
+
+function makeBubble(role, text) {
+  const wrap = document.createElement("div");
+  wrap.style.display = "flex";
+  wrap.style.width = "100%";
+  wrap.style.justifyContent = role === "user" ? "flex-end" : "flex-start";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble " + role;
+  bubble.style.maxWidth = "78%";
+  bubble.style.padding = "10px 14px";
+  bubble.style.borderRadius = "12px";
+  bubble.style.whiteSpace = "pre-wrap";
+  bubble.style.background = role === "user" ? "linear-gradient(90deg,#1e90ff,#0050b3)" : "transparent";
+  bubble.style.color = role === "user" ? "#fff" : "var(--text)";
+  bubble.style.border = role === "user" ? "none" : "1px solid var(--border)";
+  bubble.innerText = text;
+  wrap.appendChild(bubble);
+  return {wrap, bubble};
+}
+
+function appendMessage(role, text) {
+  const {wrap} = makeBubble(role, text);
+  messagesEl.appendChild(wrap);
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  // keep scroll pinned to bottom
+  messagesEl.scrollTop = messagesEl.scrollHeight - messagesEl.clientHeight;
+}
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  // append user message
+  appendMessage("user", text);
+  inputEl.value = "";
+  inputEl.focus();
+
+  // add placeholder for assistant
+  const placeholder = makeBubble("assistant", "...");
+  messagesEl.appendChild(placeholder.wrap);
+  scrollToBottom();
+
+  // Use server-side API key only; do not prompt the user for a key.
+  try {
+    // Use server-side API key only; do not send any client API key.
+    const resp = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      // Use a chat-completions compatible model by default so the backend
+      // sends the request to /v1/chat/completions successfully.
+      body: JSON.stringify({message: text, model: "openai/gpt-3.5-turbo"})
+    });
+    const j = await resp.json();
+    if (!resp.ok) {
+      let errMsg = j.error || j.detail || j.body || resp.statusText;
+      try {
+        if (typeof errMsg === "object") errMsg = JSON.stringify(errMsg);
+      } catch (ee) {
+        errMsg = String(errMsg);
+      }
+      placeholder.bubble.innerText = "Error: " + errMsg;
+      placeholder.bubble.style.color = "var(--text)";
+      placeholder.bubble.style.border = "1px solid var(--border)";
+      return;
+    }
+    if (j.ok && j.response) {
+      placeholder.bubble.innerText = j.response;
+      placeholder.bubble.style.color = "var(--text)";
+      placeholder.bubble.style.border = "1px solid var(--border)";
+      placeholder.bubble.style.background = "transparent";
+    } else {
+      // unexpected shape
+      placeholder.bubble.innerText = JSON.stringify(j);
+    }
+  } catch (e) {
+    placeholder.bubble.innerText = "Request failed: " + String(e);
+  } finally {
+    scrollToBottom();
+  }
+}
+
+sendBtn.addEventListener("click", sendMessage);
+inputEl.addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter" && !ev.shiftKey) {
+    ev.preventDefault();
+    sendMessage();
+  }
+});
+</script>
+
+</body>
+</html>
+
+ 
