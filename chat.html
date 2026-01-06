@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Chat UI Clone</title>
+<title>Chat UI Clone with Model Integration</title>
 
 <style>
-::root {
+:root {
   --bg: #121212;
   --sidebar: #0d0d0d;
   --panel: #1e1e1e;
@@ -35,7 +35,7 @@ html, body {
   width: 100vw;
 }
 
-/* ───────── Sidebar ───────── */
+/* Sidebar */
 .sidebar {
   width: 250px;
   background: var(--sidebar);
@@ -84,7 +84,7 @@ html, body {
   margin-right: 4px;
 }
 
-/* ───────── Main ───────── */
+/* Main */
 .main {
   flex: 1;
   display: flex;
@@ -99,7 +99,7 @@ html, body {
   margin-bottom: 32px;
 }
 
-/* ───────── Input Bar ───────── */
+/* Input Bar */
 .prompt {
   width: min(720px, 92%);
   background: var(--panel);
@@ -146,7 +146,7 @@ html, body {
   filter: brightness(1.1);
 }
 
-/* ───────── Footer ───────── */
+/* Footer */
 .footer {
   position: absolute;
   bottom: 14px;
@@ -155,7 +155,7 @@ html, body {
   font-size: 13px;
 }
 
-/* ───────── Animations ───────── */
+/* Animations */
 .prompt {
   animation: pop 0.5s ease;
 }
@@ -206,7 +206,7 @@ html, body {
 
       <div class="prompt" style="position:sticky;bottom:0;background:transparent;padding:0;margin-top:6px;">
         <button title="Add">＋</button>
-        <input id="chat-input" type="text" placeholder="Type a message…" />
+        <input id="chat-input" type="text" placeholder="Type a message…" autocomplete="off" />
         <button class="send" title="Send">↑</button>
       </div>
     </div>
@@ -217,6 +217,7 @@ html, body {
 </div>
 
 <script>
+// Utility function to get username for greeting and footer
 function getLoggedInName() {
   try {
     if (window.currentUser && window.currentUser.name) return window.currentUser.name;
@@ -227,6 +228,7 @@ function getLoggedInName() {
   return "username";
 }
 
+// Set username
 const fullName = getLoggedInName();
 const shortName = fullName.split(" ")[0] || fullName;
 const usernameEl = document.getElementById("username");
@@ -234,10 +236,15 @@ if (usernameEl) usernameEl.textContent = shortName;
 const fullnameEl = document.getElementById("fullname");
 if (fullnameEl) fullnameEl.textContent = fullName;
 
+// DOM references
 const messagesEl = document.getElementById("messages");
 const inputEl = document.getElementById("chat-input");
 const sendBtn = document.querySelector(".send");
 
+// Model/Backend: use the server route which should run Python functions as in key_manager.py
+const CHAT_API_ENDPOINT = "/api/chat"; // Python backend expected
+
+// Helper for bubbles
 function makeBubble(role, text) {
   const wrap = document.createElement("div");
   wrap.style.display = "flex";
@@ -249,7 +256,9 @@ function makeBubble(role, text) {
   bubble.style.padding = "10px 14px";
   bubble.style.borderRadius = "12px";
   bubble.style.whiteSpace = "pre-wrap";
-  bubble.style.background = role === "user" ? "linear-gradient(90deg,#1e90ff,#0050b3)" : "transparent";
+  bubble.style.background = role === "user"
+    ? "linear-gradient(90deg,#1e90ff,#0050b3)"
+    : "transparent";
   bubble.style.color = role === "user" ? "#fff" : "var(--text)";
   bubble.style.border = role === "user" ? "none" : "1px solid var(--border)";
   bubble.innerText = text;
@@ -264,62 +273,106 @@ function appendMessage(role, text) {
 }
 
 function scrollToBottom() {
-  // keep scroll pinned to bottom
   messagesEl.scrollTop = messagesEl.scrollHeight - messagesEl.clientHeight;
 }
+
+// Persist chat history locally so the UI can "listen" to all user messages
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem("chat_history");
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return;
+    for (const m of arr) {
+      appendMessage(m.role, m.text);
+    }
+  } catch (e) {
+    console.warn("failed to load chat history", e);
+  }
+}
+
+function saveMessage(role, text) {
+  try {
+    const raw = localStorage.getItem("chat_history");
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.push({role, text});
+    localStorage.setItem("chat_history", JSON.stringify(arr.slice(-200)));
+  } catch (e) {
+    console.warn("failed to save message", e);
+  }
+}
+
+// load persisted messages on open
+loadHistory();
 
 async function sendMessage() {
   const text = inputEl.value.trim();
   if (!text) return;
-  // append user message
+  // append user's message
   appendMessage("user", text);
+  saveMessage("user", text);
   inputEl.value = "";
   inputEl.focus();
 
-  // add placeholder for assistant
+  // add the assistant placeholder
   const placeholder = makeBubble("assistant", "...");
   messagesEl.appendChild(placeholder.wrap);
   scrollToBottom();
 
-  // Use server-side API key only; do not prompt the user for a key.
+  // POST to backend which should use key_manager.py functions under the hood
   try {
-    // Use server-side API key only; do not send any client API key.
-    const resp = await fetch("/api/chat", {
+    const resp = await fetch(CHAT_API_ENDPOINT, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      // Use a chat-completions compatible model by default so the backend
-      // sends the request to /v1/chat/completions successfully.
-      body: JSON.stringify({message: text, model: "openai/gpt-3.5-turbo"})
+      // The backend will select server-side API key, default model,
+      // and (if implemented as in key_manager.py) compose OpenAI/OpenRouter call
+      body: JSON.stringify({
+        message: text,
+        model: "openai/gpt-3.5-turbo" // can be changed to any supported backend model string
+      })
     });
+    // The backend is expected to call functions similar to key_manager.py for key/model selection
     const j = await resp.json();
+    // Handle errors, including inability to resolve a key/model
     if (!resp.ok) {
       let errMsg = j.error || j.detail || j.body || resp.statusText;
       try {
         if (typeof errMsg === "object") errMsg = JSON.stringify(errMsg);
-      } catch (ee) {
-        errMsg = String(errMsg);
-      }
+      } catch (ee) { errMsg = String(errMsg); }
       placeholder.bubble.innerText = "Error: " + errMsg;
       placeholder.bubble.style.color = "var(--text)";
       placeholder.bubble.style.border = "1px solid var(--border)";
       return;
     }
-    if (j.ok && j.response) {
-      placeholder.bubble.innerText = j.response;
+    // If response is successful, show it
+    if ((j.ok && j.response) || j.result) {
+      // The backend should return {ok: true, response: "..."}
+      placeholder.bubble.innerText = j.response || j.result;
+      saveMessage("assistant", placeholder.bubble.innerText);
       placeholder.bubble.style.color = "var(--text)";
       placeholder.bubble.style.border = "1px solid var(--border)";
       placeholder.bubble.style.background = "transparent";
+    } else if (j.error) {
+      // If key_manager.py failed to get a key or model, etc.
+      placeholder.bubble.innerText = "Error: " + String(j.error);
+      placeholder.bubble.style.color = "#ff4060";
+      placeholder.bubble.style.border = "1px solid var(--accent)";
+      placeholder.bubble.style.background = "transparent";
     } else {
-      // unexpected shape
+      // Unexpected result
       placeholder.bubble.innerText = JSON.stringify(j);
     }
   } catch (e) {
     placeholder.bubble.innerText = "Request failed: " + String(e);
+      saveMessage("assistant", placeholder.bubble.innerText);
+    placeholder.bubble.style.color = "#ff4060";
+    placeholder.bubble.style.border = "1px solid var(--accent)";
   } finally {
     scrollToBottom();
   }
 }
 
+// UI event listeners
 sendBtn.addEventListener("click", sendMessage);
 inputEl.addEventListener("keydown", (ev) => {
   if (ev.key === "Enter" && !ev.shiftKey) {
@@ -331,5 +384,3 @@ inputEl.addEventListener("keydown", (ev) => {
 
 </body>
 </html>
-
- 

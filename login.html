@@ -149,6 +149,29 @@ button.primary:hover{background:#191919}
 <script>
 let fetchedUsers = null; // cache for fetched users
 
+// Utility to persist logged-in user data in localStorage (not just sessionStorage)
+function saveLoggedInUser(userObj) {
+  if (!userObj) return;
+  try {
+    localStorage.setItem("logged_in_user", JSON.stringify(userObj));
+    sessionStorage.setItem("user_id", userObj.id !== undefined ? userObj.id : userObj.email);
+    sessionStorage.setItem("username", userObj.first || userObj.username || userObj.name || userObj.email);
+  } catch(e){}
+}
+
+function clearLoggedInUser() {
+  try { localStorage.removeItem("logged_in_user"); } catch(e){}
+  try { sessionStorage.removeItem("user_id"); sessionStorage.removeItem("username"); } catch(e){}
+}
+
+function getPersistedUser() {
+  try {
+    const data = localStorage.getItem("logged_in_user");
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch(e){ return null; }
+}
+
 // Fetch users from user.json
 async function fetchUsers() {
   if (fetchedUsers !== null) return fetchedUsers;
@@ -207,13 +230,10 @@ async function login(){
     x=>x.email===emailValue && x.password===password.value
   );
   if(!u) return show("User not found");
-  // Save user id in sessionStorage (or localStorage)
-  let userId = u.id !== undefined ? u.id : u.email;
-  try {
-    sessionStorage.setItem("user_id", userId);
-    const displayName = u.first || u.username || u.name || u.email;
-    sessionStorage.setItem("username", displayName);
-  } catch(e){}
+  // Save user info in sessionStorage and localStorage (persistent login)
+  let userObj = {...u};
+  saveLoggedInUser(userObj);
+
   showNotif("Login successful", "success");
   setTimeout(()=>location.href="chat.html", 800);
 }
@@ -239,8 +259,33 @@ function showNotif(msg, type="info"){
   },3000);
 }
 
+async function tryAutoLogin() {
+  // If user already present in localStorage (from previous login), auto-login
+  const persisted = getPersistedUser();
+  if (persisted && persisted.email) {
+    // Optionally: validate user is still in current user.json
+    const users = await fetchUsers();
+    const found = users.find(x=>x.email===persisted.email && x.password===persisted.password);
+    if (found) {
+      // Restore session and jump to chat.html directly
+      saveLoggedInUser(found);
+      showNotif("Welcome back, "+(found.first||found.username||found.name||found.email), "success");
+      setTimeout(()=>location.href="chat.html", 800);
+      return true;
+    } else {
+      // The user in storage doesn't exist anymore, clear and show login form
+      clearLoggedInUser();
+    }
+  }
+  return false;
+}
+
 // NEW: ADD ENTER key handling for both email and password inputs
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // If previously logined, auto-login
+  const didAuto = await tryAutoLogin();
+  if (didAuto) return; // Don't show form
+
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const mainBtn = document.getElementById('mainBtn');
@@ -268,9 +313,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
     }
   });
-
-  // Also: if both fields are filled and user clicks enter in either, trigger the correct continue/login
-  // (Handled above - no further change needed)
 
   // (Optionally) Autofocus email field
   emailInput.focus();
