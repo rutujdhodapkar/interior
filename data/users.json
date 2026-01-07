@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+      "email": "asd@asd.asd",
+      "password_hash": "688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6",
+      "created_at": "2026-01-07T14:56:03.605830Z"
+    }
+  ]
+}

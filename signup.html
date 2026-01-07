@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,56 +79,23 @@ button.primary:hover:not([disabled]){background:#191919}
   <h1>Create account</h1>
   <p>Sign up to continue</p>
 
-  <input id="username" placeholder="Username" oninput="updateSignupButton()">
-  <input id="email" placeholder="Email" oninput="updateSignupButton()">
-  <input id="first" placeholder="First name" oninput="updateSignupButton()">
-  <input id="last" placeholder="Last name (optional)">
-  <input id="password" type="password" placeholder="Password" oninput="updateSignupButton()">
-  <input id="age" placeholder="Age (optional)">
-  <input id="role" placeholder="Role (optional)">
+  <form id="signupForm" action="/signup" method="post" style="display:flex;flex-direction:column;">
+    <input id="username" name="username" placeholder="Username" oninput="updateSignupButton()">
+    <input id="email" name="email" type="email" placeholder="Email" oninput="updateSignupButton()">
+    <input id="first" name="first" placeholder="First name" oninput="updateSignupButton()">
+    <input id="last" name="last" placeholder="Last name (optional)">
+    <input id="password" name="password" type="password" placeholder="Password" oninput="updateSignupButton()">
+    <input id="age" name="age" placeholder="Age (optional)">
+    <input id="role" name="role" placeholder="Role (optional)">
 
-  <button class="primary" id="signupBtn" onclick="signup()" disabled>Create account</button>
-  <button onclick="location.href='login.html'">Back to login</button>
+    <button class="primary" id="signupBtn" type="button" onclick="signup()" disabled>Create account</button>
+    <button type="button" onclick="location.href='/login'">Back to login</button>
+  </form>
 </div>
 <div class="toast-box" id="toast-box"></div>
 
 <script>
-// This version saves users to a file called "user.json" using a POST - this only works if the backend supports it.
-
-async function fetchUsers() {
-  try {
-    // Attempt to get the file from the server (requires backend endpoint to support this)
-    const res = await fetch('user.json', {cache: "no-store"});
-    if (!res.ok) return [];
-    return await res.json();
-  } catch {
-    return [];
-  }
-}
-
-async function saveUsers(usersArr) {
-  // You need an endpoint (e.g., /save_users) on your backend to handle this!
-  try {
-    let res = await fetch('user.json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(usersArr)
-    });
-    if (!res.ok) throw new Error('Failed to save');
-  } catch {
-    showToast('Could not save user data file. Backend required.', 'error');
-    throw new Error('Save failed');
-  }
-}
-
-// Generate unique user id (simple random + time method)
-function genUserId() {
-  const rand = Math.random().toString(36).substring(2,10);
-  const ms = Date.now().toString(36);
-  return "uid_" + rand + ms;
-}
+// Signup form sends a POST to /signup on the backend. The server handles user creation.
 
 // Toast functions - ALL error/info/success go to top right as toast, not inline box
 function showToast(msg, type="success", cb=null) {
@@ -193,30 +161,12 @@ async function signup(){
     return;
   }
 
-  let u = await fetchUsers();
-  if(u.some(x=>x.email===emailVal)){
-    showToast("Email already exists", "error");
-    return;
-  }
-
-  const uniqueId = genUserId();
-  u.push({
-    id: uniqueId,
-    username: userVal,
-    email: emailVal,
-    first: firstVal,
-    last: last.value.trim() || "",
-    password: pwdVal,
-    age: age.value.trim()||null,
-    role: role.value.trim()||null
-  });
-
-  try {
-    await saveUsers(u);
-    showToast("Account created", "success", ()=>{location.href="login.html"});
-  } catch (e) {
-    // error shown in saveUsers
-  }
+  // Submit the form to the backend (regular form POST so browser follows redirects)
+  const form = document.getElementById('signupForm');
+  // Optionally, show a toast while waiting
+  showToast("Creating account...", "success");
+  // Submit the form (will navigate on success)
+  form.submit();
 }
 
 // All errors and info are toast only at top right, no inline box anymore

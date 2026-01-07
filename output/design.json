@@ -1,0 +1,15 @@
+```json
+{
+  "design_type": "villa",
+  "rooms": [
+    "3 bedrooms",
+    "living room",
+    "kitchen",
+    "2 bathrooms",
+    "dining area"
+  ],
+  "style": "palace",
+  "view": "",
+  "extra_details": "Luxurious and spacious layout resembling a palace, suitable for a villa."
+}
+```

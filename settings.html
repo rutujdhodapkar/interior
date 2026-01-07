@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      font-family: system-ui, sans-serif;
+    }
+    .app-settings {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+    .resizable-panel {
+      min-width: 210px;
+      max-width: 340px;
+      width: 260px;
+      background: #19191a;
+      border-right: 1px solid #262626;
+      display: flex;
+      flex-direction: column;
+      resize: horizontal;
+      overflow: auto;
+    }
+    .settings-header {
+      padding: 24px 20px 16px 20px;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fafbfc;
+      border-bottom: 1px solid #232323;
+    }
+    .settings-list {
+      padding: 0;
+      margin: 0;
+      list-style-type: none;
+      width: 100%;
+    }
+    .settings-list li {
+      padding: 16px 22px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.16s, color 0.16s;
+      color: #d0d0d6;
+    }
+    .settings-list li.selected,
+    .settings-list li:hover {
+      background: #222225;
+      color: #fff;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      height: 100vh;
+    }
+    .logout-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 36px 44px 0 44px;
+      gap: 18px;
+    }
+    .logout-label {
+      font-size: 17px;
+      color: #f0f0f0;
+      font-weight: 500;
+      margin-right: 12px;
+      letter-spacing: 0.2px;
+    }
+    .logout-btn {
+      padding: 11px 38px;
+      font-size: 15px;
+      background: #19191a;
+      color: #fafbfc;
+      border: 1px solid #232323;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.16s, color 0.16s, border 0.16s;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .logout-btn:hover {
+      background: #262626;
+      color: #ff7272;
+      border: 1px solid #ff7272;
+    }
+    @media (max-width: 600px) {
+      .logout-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 24px 10px 0 10px;
+      }
+      .main-content {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-settings">
+    <nav class="resizable-panel">
+      <div class="settings-header">
+        Settings
+      </div>
+      <ul class="settings-list">
+        <li id="settings-general" class="selected">General</li>
+      </ul>
+    </nav>
+    <main class="main-content">
+      <div class="logout-row">
+        <span class="logout-label">Log out of this device</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </main>
+  </div>
+  <script>
+    // Highlight "General" when clicked (in this example, only one option)
+    const generalItem = document.getElementById('settings-general');
+    generalItem.addEventListener('click', function() {
+      document.querySelectorAll('.settings-list li').forEach(li => li.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+
+    function clearAllCookiesThisDomain() {
+      // Split cookie string and loop through all individual name=value pairs
+      document.cookie.split(";").forEach(function(cookie) {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        // Remove for current path and domain
+        document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        // Also try with domain, for extra safety
+        document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+      });
+    }
+
+    function logout() {
+      // Attempt server-side logout to clear HttpOnly session cookie, then redirect
+      fetch('/logout', { method: 'GET', credentials: 'same-origin' })
+        .catch(() => {})
+        .finally(() => {
+          try { clearAllCookiesThisDomain(); } catch (e) {}
+          window.location.href = 'login.html';
+        });
+    }
+  </script>
+</body>
+</html>

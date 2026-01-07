@@ -1,323 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root {
-  --black:#000; --gray:#666; --border:#e5e5e5;
-}
-*{box-sizing:border-box;font-family:system-ui}
-body{
-  margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
-}
-.container{width:380px;text-align:center}
-h1{margin-bottom:6px}
-p{color:var(--gray);font-size:14px}
-input,button{
-  width:100%;padding:16px;margin-top:12px;
-  border-radius:30px;border:1px solid var(--border);
-  font-size:14px;
-}
-button{cursor:pointer}
-button.primary{background:#000;color:#fff;border:none}
-button:hover{background:#f5f5f5}
-button.primary:hover{background:#191919}
-.divider{margin:18px 0;color:#aaa;font-size:12px}
-/* error box now uses notif styling for top right */
-.error{
-  position:fixed;
-  top:32px;
-  right:32px;
-  min-width:220px;
-  z-index:9999;
-  background:#ff4d4f;
-  color:#fff;
-  padding:16px 32px 16px 18px;
-  border-radius:14px;
-  box-shadow:0 4px 18px #0002;
-  display:none;
-  font-size:16px;
-  animation:slidein .25s;
-}
-.notif{
-  position:fixed;
-  top:32px;
-  right:32px;
-  min-width:220px;
-  z-index:9999;
-  background:#232a38;
-  color:#fff;
-  padding:16px 32px 16px 18px;
-  border-radius:14px;
-  box-shadow:0 4px 18px #0002;
-  display:none;
-  font-size:16px;
-  animation:slidein .25s;
-}
-.notif.success{background:#0bb66f}
-.notif.error{background:#ff4d4f}
-.google-btn, .microsoft-btn, .apple-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: #fff;
-  color: #444;
-  border: 1px solid var(--border);
-  font-weight: 500;
-  font-size: 15px;
-  padding: 13px 0;
-  border-radius: 30px;
-  margin-bottom: 12px;
-  transition: box-shadow 0.16s;
-  box-shadow: 0 1px 4px #0001;
-}
-.google-btn:hover, .microsoft-btn:hover, .apple-btn:hover {
-  box-shadow: 0 2px 6px #0002;
-  background: #f9f9f9;
-}
-.google-logo, .microsoft-logo, .apple-logo {
-  height: 22px;
-  width: 22px;
-  display: inline-block;
-  margin-right: 5px;
-}
-@media (max-width:600px){
-  .notif,
-  .error{right:10px;left:10px;min-width:0;}
-}
-@keyframes slidein{
-  from{transform:translateY(-18px);opacity:0;}
-  to{transform:translateY(0);opacity:1;}
-}
-</style>
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root {
+      --black: #000;
+      --gray: #666;
+      --border: #e5e5e5;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 380px;
+      text-align: center
+    }
+
+    h1 {
+      margin-bottom: 6px
+    }
+
+    p {
+      color: var(--gray);
+      font-size: 14px
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer
+    }
+
+    button.primary {
+      background: #000;
+      color: #fff;
+      border: none
+    }
+
+    button:hover {
+      background: #f5f5f5
+    }
+
+    button.primary:hover {
+      background: #191919
+    }
+
+    .divider {
+      margin: 18px 0;
+      color: #aaa;
+      font-size: 12px
+    }
+
+    /* error box now uses notif styling for top right */
+    .error {
+      position: fixed;
+      top: 32px;
+      right: 32px;
+      min-width: 220px;
+      z-index: 9999;
+      background: #ff4d4f;
+      color: #fff;
+      padding: 16px 32px 16px 18px;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px #0002;
+      display: none;
+      font-size: 16px;
+      animation: slidein .25s;
+    }
+
+    .notif {
+      position: fixed;
+      top: 32px;
+      right: 32px;
+      min-width: 220px;
+      z-index: 9999;
+      background: #232a38;
+      color: #fff;
+      padding: 16px 32px 16px 18px;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px #0002;
+      display: none;
+      font-size: 16px;
+      animation: slidein .25s;
+    }
+
+    .notif.success {
+      background: #0bb66f
+    }
+
+    .notif.error {
+      background: #ff4d4f
+    }
+
+    .google-btn,
+    .microsoft-btn,
+    .apple-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #fff;
+      color: #444;
+      border: 1px solid var(--border);
+      font-weight: 500;
+      font-size: 15px;
+      padding: 13px 0;
+      border-radius: 30px;
+      margin-bottom: 12px;
+      transition: box-shadow 0.16s;
+      box-shadow: 0 1px 4px #0001;
+    }
+
+    .google-btn:hover,
+    .microsoft-btn:hover,
+    .apple-btn:hover {
+      box-shadow: 0 2px 6px #0002;
+      background: #f9f9f9;
+    }
+
+    .google-logo,
+    .microsoft-logo,
+    .apple-logo {
+      height: 22px;
+      width: 22px;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    @media (max-width:600px) {
+
+      .notif,
+      .error {
+        right: 10px;
+        left: 10px;
+        min-width: 0;
+      }
+    }
+
+    @keyframes slidein {
+      from {
+        transform: translateY(-18px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="notif" id="notif"></div>
+  <div class="notif" id="notif"></div>
 
-<div class="container">
-  <h1>Log in</h1>
-  <p>Welcome back</p>
+  <div class="container">
+    <h1>Log in</h1>
+    <p>Welcome back</p>
 
-  <button class="google-btn" style="margin-top: 12px;" onclick="showNotif('Google login is not Supported Yet','error')">
-    <span class="google-logo">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Google_Favicon_2025.svg" alt="Google" width="22" height="22" style="display:inline-block;">
-    </span>
-    Continue with Google
-  </button>
-  <button class="microsoft-btn" onclick="showNotif('Microsoft login is not Supported Yet','error')">
-    <span class="microsoft-logo">
-      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" width="22" height="22" style="display:inline-block;">
-        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-        <g id="SVGRepo_iconCarrier">
-          <path fill="#F35325" d="M1 1h6.5v6.5H1V1z"></path>
-          <path fill="#81BC06" d="M8.5 1H15v6.5H8.5V1z"></path>
-          <path fill="#05A6F0" d="M1 8.5h6.5V15H1V8.5z"></path>
-          <path fill="#FFBA08" d="M8.5 8.5H15V15H8.5V8.5z"></path>
-        </g>
-      </svg>
-    </span>
-    Continue with Microsoft
-  </button>
-  <button class="apple-btn" onclick="showNotif('Apple login is not Supported Yet','error')">
-    <span class="apple-logo">
-      <img src="https://www.svgrepo.com/show/511330/apple-173.svg" alt="Apple" width="22" height="22" style="display:inline-block;">
-    </span>
-    Continue with Apple
-  </button>
-  <div class="divider">or</div>
-  <div id="login-fields">
-    <input id="email" placeholder="Email address" autocomplete="username">
-    <div id="password-wrap" style="display:none;">
-      <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="google-btn" style="margin-top: 12px;"
+      onclick="showNotif('Google login is not Supported Yet','error')">
+      <span class="google-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Google_Favicon_2025.svg" alt="Google" width="22"
+          height="22" style="display:inline-block;">
+      </span>
+      Continue with Google
+    </button>
+    <button class="microsoft-btn" onclick="showNotif('Microsoft login is not Supported Yet','error')">
+      <span class="microsoft-logo">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" width="22" height="22"
+          style="display:inline-block;">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path fill="#F35325" d="M1 1h6.5v6.5H1V1z"></path>
+            <path fill="#81BC06" d="M8.5 1H15v6.5H8.5V1z"></path>
+            <path fill="#05A6F0" d="M1 8.5h6.5V15H1V8.5z"></path>
+            <path fill="#FFBA08" d="M8.5 8.5H15V15H8.5V8.5z"></path>
+          </g>
+        </svg>
+      </span>
+      Continue with Microsoft
+    </button>
+    <button class="apple-btn" onclick="showNotif('Apple login is not Supported Yet','error')">
+      <span class="apple-logo">
+        <img src="https://www.svgrepo.com/show/511330/apple-173.svg" alt="Apple" width="22" height="22"
+          style="display:inline-block;">
+      </span>
+      Continue with Apple
+    </button>
+    <div class="divider">or</div>
+    <div id="login-fields">
+      <form id="loginForm" action="/login" method="post" style="display:flex;flex-direction:column;">
+        <input id="email" name="email" placeholder="Email address" autocomplete="username">
+        <div id="password-wrap" style="display:none;">
+          <input id="password" name="password" type="password" placeholder="Password" autocomplete="current-password">
+        </div>
+        <button class="primary" id="mainBtn" type="button" onclick="handleMainBtn()">Continue</button>
+      </form>
     </div>
-    <button class="primary" id="mainBtn" onclick="handleMainBtn()">Continue</button>
+
+    <div class="divider">OR</div>
+    <button onclick="location.href='signup.html'">Create new account</button>
+
+    <div id="err" class="error"></div>
   </div>
 
-  <div class="divider">OR</div>
-  <button onclick="location.href='signup.html'">Create new account</button>
+  <script>
+    // Note: Login now submits to backend /login. Client-side user.json checks removed.
 
-  <div id="err" class="error"></div>
-</div>
+    let atPasswordStep = false;
 
-<script>
-let fetchedUsers = null; // cache for fetched users
-
-// Utility to persist logged-in user data in localStorage (not just sessionStorage)
-function saveLoggedInUser(userObj) {
-  if (!userObj) return;
-  try {
-    localStorage.setItem("logged_in_user", JSON.stringify(userObj));
-    sessionStorage.setItem("user_id", userObj.id !== undefined ? userObj.id : userObj.email);
-    sessionStorage.setItem("username", userObj.first || userObj.username || userObj.name || userObj.email);
-  } catch(e){}
-}
-
-function clearLoggedInUser() {
-  try { localStorage.removeItem("logged_in_user"); } catch(e){}
-  try { sessionStorage.removeItem("user_id"); sessionStorage.removeItem("username"); } catch(e){}
-}
-
-function getPersistedUser() {
-  try {
-    const data = localStorage.getItem("logged_in_user");
-    if (!data) return null;
-    return JSON.parse(data);
-  } catch(e){ return null; }
-}
-
-// Fetch users from user.json
-async function fetchUsers() {
-  if (fetchedUsers !== null) return fetchedUsers;
-  try {
-    const resp = await fetch("user.json", {cache: "no-store"});
-    if (!resp.ok) throw new Error("Failed to fetch users");
-    const data = await resp.json();
-    if (!Array.isArray(data)) throw new Error("Bad users format");
-    fetchedUsers = data;
-    return data;
-  } catch(e) {
-    showNotif("Unable to load users data", "error");
-    fetchedUsers = [];
-    return [];
-  }
-}
-
-let atPasswordStep = false;
-
-// Email validation function for checking "@" and "."
-function isValidEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-}
-
-// Only show one error box at a time
-function hideErrorBoxes() {
-  const err = document.getElementById('err');
-  if (err) {
-    err.style.display="none";
-    clearTimeout(err._timeout);
-  }
-}
-
-function handleMainBtn() {
-  hideErrorBoxes();
-  const emailValue = email.value.trim();
-  if (!atPasswordStep) {
-    if (!emailValue) return show("Enter email");
-    if (!isValidEmail(emailValue)) return show("Enter a valid email address");
-    document.getElementById("password-wrap").style.display = "block";
-    document.getElementById("mainBtn").textContent = "Login";
-    atPasswordStep = true;
-    document.getElementById("password").focus();
-  } else {
-    login();
-  }
-}
-
-async function login(){
-  hideErrorBoxes();
-  const emailValue = email.value.trim();
-  if(!isValidEmail(emailValue)) return show("Enter a valid email address");
-  const users = await fetchUsers();
-  const u=users.find(
-    x=>x.email===emailValue && x.password===password.value
-  );
-  if(!u) return show("User not found");
-  // Save user info in sessionStorage and localStorage (persistent login)
-  let userObj = {...u};
-  saveLoggedInUser(userObj);
-
-  showNotif("Login successful", "success");
-  setTimeout(()=>location.href="chat.html", 800);
-}
-
-function show(m){
-  hideErrorBoxes();
-  const err = document.getElementById('err');
-  err.innerText = m;
-  err.style.display = "block";
-  clearTimeout(err._timeout);
-  err._timeout = setTimeout(()=>err.style.display="none", 3000);
-}
-
-function showNotif(msg, type="info"){
-  hideErrorBoxes();
-  const notif = document.getElementById('notif');
-  notif.innerText = msg;
-  notif.className = 'notif' + (type?" "+type:"");
-  notif.style.display = "block";
-  clearTimeout(notif._timeout);
-  notif._timeout = setTimeout(()=>{
-    notif.style.display="none";
-  },3000);
-}
-
-async function tryAutoLogin() {
-  // If user already present in localStorage (from previous login), auto-login
-  const persisted = getPersistedUser();
-  if (persisted && persisted.email) {
-    // Optionally: validate user is still in current user.json
-    const users = await fetchUsers();
-    const found = users.find(x=>x.email===persisted.email && x.password===persisted.password);
-    if (found) {
-      // Restore session and jump to chat.html directly
-      saveLoggedInUser(found);
-      showNotif("Welcome back, "+(found.first||found.username||found.name||found.email), "success");
-      setTimeout(()=>location.href="chat.html", 800);
-      return true;
-    } else {
-      // The user in storage doesn't exist anymore, clear and show login form
-      clearLoggedInUser();
+    // Email validation function for checking "@" and "."
+    function isValidEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
     }
-  }
-  return false;
-}
 
-// NEW: ADD ENTER key handling for both email and password inputs
-document.addEventListener('DOMContentLoaded', async ()=>{
-  // If previously logined, auto-login
-  const didAuto = await tryAutoLogin();
-  if (didAuto) return; // Don't show form
-
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const mainBtn = document.getElementById('mainBtn');
-
-  // On email input 'Enter' keydown - trigger continue button, then focus password when showing password field
-  emailInput.addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){
-      // Trigger continue button action
-      handleMainBtn();
-      // If password-wrap is now visible (step 2), focus password input
-      if (atPasswordStep && passwordInput) {
-        setTimeout(() => { passwordInput.focus(); }, 0);
-      }
-      e.preventDefault();
-    }
-  });
-
-  // On password input 'Enter' keydown - attempt login if at password step
-  passwordInput.addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){
-      // Only allow login if atPasswordStep
-      if (atPasswordStep) {
-        handleMainBtn();
-        e.preventDefault();
+    // Only show one error box at a time
+    function hideErrorBoxes() {
+      const err = document.getElementById('err');
+      if (err) {
+        err.style.display = "none";
+        clearTimeout(err._timeout);
       }
     }
-  });
 
-  // (Optionally) Autofocus email field
-  emailInput.focus();
-});
-</script>
+    function handleMainBtn() {
+      hideErrorBoxes();
+      const emailValue = email.value.trim();
+      if (!atPasswordStep) {
+        if (!emailValue) return show("Enter email");
+        if (!isValidEmail(emailValue)) return show("Enter a valid email address");
+        document.getElementById("password-wrap").style.display = "block";
+        document.getElementById("mainBtn").textContent = "Login";
+        atPasswordStep = true;
+        document.getElementById("password").focus();
+      } else {
+        login();
+      }
+    }
+
+    function login() {
+      hideErrorBoxes();
+      const emailValue = email.value.trim();
+      if (!isValidEmail(emailValue)) return show("Enter a valid email address");
+      // Submit form to backend which will handle authentication and redirects.
+      document.getElementById('loginForm').submit();
+    }
+
+    function show(m) {
+      hideErrorBoxes();
+      const err = document.getElementById('err');
+      err.innerText = m;
+      err.style.display = "block";
+      clearTimeout(err._timeout);
+      err._timeout = setTimeout(() => err.style.display = "none", 3000);
+    }
+
+    function showNotif(msg, type = "info") {
+      hideErrorBoxes();
+      const notif = document.getElementById('notif');
+      notif.innerText = msg;
+      notif.className = 'notif' + (type ? " " + type : "");
+      notif.style.display = "block";
+      clearTimeout(notif._timeout);
+      notif._timeout = setTimeout(() => {
+        notif.style.display = "none";
+      }, 3000);
+    }
+
+    async function tryAutoLogin() {
+      // On page load, check cookies and verify with backend via /check_device (POST).
+      function getCookie(name) {
+        const value = "; " + document.cookie;
+        const parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      }
+      const user_id = getCookie('user_id');
+      const device_id = getCookie('device_id');
+      if (!user_id || !device_id) return false;
+      // Ask backend to check
+      try {
+        const res = await fetch('/check_device', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, device_id }),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (json && json.valid) {
+          // Found valid auto-login, redirect!
+          window.location.href = '/chat.html';
+          return true;
+        }
+      } catch (e) { }
+      return false;
+    }
+
+
+    // NEW: ADD ENTER key handling for both email and password inputs
+    document.addEventListener('DOMContentLoaded', async () => {
+      // If previously logined, auto-login
+      const didAuto = await tryAutoLogin();
+      if (didAuto) return; // Don't show form
+
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const mainBtn = document.getElementById('mainBtn');
+
+      // On email input 'Enter' keydown - trigger continue button, then focus password when showing password field
+      emailInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          // Trigger continue button action
+          handleMainBtn();
+          // If password-wrap is now visible (step 2), focus password input
+          if (atPasswordStep && passwordInput) {
+            setTimeout(() => { passwordInput.focus(); }, 0);
+          }
+          e.preventDefault();
+        }
+      });
+
+      // On password input 'Enter' keydown - attempt login if at password step
+      passwordInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          // Only allow login if atPasswordStep
+          if (atPasswordStep) {
+            handleMainBtn();
+            e.preventDefault();
+          }
+        }
+      });
+
+      // (Optionally) Autofocus email field
+      emailInput.focus();
+    });
+  </script>
 
 </body>
 
@@ -327,5 +371,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     background: #ababab;
     color: #1f1f1f;
   }
-  </style>
+</style>
+
 </html>

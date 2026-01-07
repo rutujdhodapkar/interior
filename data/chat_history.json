@@ -1,0 +1,17 @@
+[
+  {
+    "id": "852fc6b4-2e7c-4415-b20e-df2a862bd903",
+    "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+    "role": "user",
+    "text": "hi",
+    "time": "2026-01-07T16:57:43.571330Z"
+  },
+  {
+    "id": "41ed7450-53ed-4182-9753-0b4c4f135588",
+    "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+    "role": "bot",
+    "text": "Hello! How can I help you today?",
+    "image_urls": [],
+    "time": "2026-01-07T16:57:47.605412Z"
+  }
+]

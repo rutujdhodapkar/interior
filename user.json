@@ -1,11 +1,21 @@
 [
   {
-    "id": "uid_sw02raoxmk1clpml",
-    "username": "asd",
+    "age": null,
     "email": "asd@asd.asd",
     "first": "asd",
+    "id": "uid_sw02raoxmk1clpml",
     "last": "",
     "password": "asd",
+    "role": null,
+    "username": "asd"
+  },
+  {
+    "id": "uid_dr1hqil8mk41bzv0",
+    "username": "example",
+    "email": "e@gmail.com",
+    "first": "eg",
+    "last": "",
+    "password": "eg",
     "age": null,
     "role": null
   }
