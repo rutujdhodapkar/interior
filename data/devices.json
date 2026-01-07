@@ -24,6 +24,11 @@
       "device_id": "ede50d85-c0df-4e4e-a8d4-7116404130db",
       "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
       "created_at": "2026-01-07T15:24:22.171738Z"
+    },
+    {
+      "device_id": "7bc8ad39-e11d-4d80-b0a0-afb94bf3d75d",
+      "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+      "created_at": "2026-01-07T17:20:30.093002Z"
     }
   ]
 }

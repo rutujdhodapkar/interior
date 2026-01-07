@@ -261,40 +261,143 @@ def load_chat_history():
 def save_chat_history(history):
     save_json(CHAT_HISTORY_FILE, history)
 
+SESSIONS_FILE = os.path.join(DATA_DIR, "sessions.json")
+
+def load_sessions():
+    if not os.path.exists(SESSIONS_FILE):
+        return []
+    try:
+        return load_json(SESSIONS_FILE)
+    except:
+        return []
+
+def save_sessions(sessions):
+    save_json(SESSIONS_FILE, sessions)
+
+@app.route("/get_sessions")
+def get_sessions():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return jsonify([])
+    
+    all_sessions = load_sessions()
+    user_sessions = [s for s in all_sessions if s.get('user_id') == user_id]
+    # Sort by created_at desc
+    user_sessions.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return jsonify(user_sessions)
+
+@app.route("/create_session", methods=["POST"])
+def create_session():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return "Unauthorized", 401
+    
+    sessions = load_sessions()
+    history = load_chat_history()
+    
+    # Check if user has a recent empty session to reuse
+    user_sessions = [s for s in sessions if s.get('user_id') == user_id]
+    user_sessions.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    if user_sessions:
+        latest = user_sessions[0]
+        # Check if this session has any messages
+        has_msgs = any(m.get('session_id') == latest['id'] for m in history)
+        if not has_msgs:
+            return jsonify(latest)
+
+    session_id = str(uuid.uuid4())
+    title = "New Chat"
+    
+    new_session = {
+        "id": session_id,
+        "user_id": user_id,
+        "title": title,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    
+    sessions.append(new_session)
+    save_sessions(sessions)
+    
+    return jsonify(new_session)
+
+@app.route("/delete_session", methods=["POST"])
+def delete_session():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return "Unauthorized", 401
+    
+    data = request.get_json(force=True)
+    session_id = data.get("session_id")
+    
+    # Remove session
+    sessions = load_sessions()
+    sessions = [s for s in sessions if not (s.get('id') == session_id and s.get('user_id') == user_id)]
+    save_sessions(sessions)
+    
+    # Remove messages
+    history = load_chat_history()
+    history = [m for m in history if not (m.get('session_id') == session_id and m.get('user_id') == user_id)]
+    save_chat_history(history)
+    
+    return jsonify({"status": "ok"})
+
+@app.route("/rename_session", methods=["POST"])
+def rename_session():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return "Unauthorized", 401
+    
+    data = request.get_json(force=True)
+    session_id = data.get("session_id")
+    new_title = data.get("title")
+    
+    sessions = load_sessions()
+    for s in sessions:
+        if s.get("id") == session_id and s.get("user_id") == user_id:
+            s["title"] = new_title
+            save_sessions(sessions)
+            return jsonify({"status": "ok"})
+            
+    return "Session not found", 404
+
 @app.route("/chat_messages")
 def chat_messages():
     ensure_storage()
     user_id = auto_login_user_from_cookies(request)
-    # For demo purposes, if not logged in, maybe show empty or error?
-    # The user might want to test without full login flow, but let's stick to auth.
-    if not user_id:
-        return jsonify([]) 
+    if not user_id: return jsonify([])
     
+    session_id = request.args.get("session_id")
     all_history = load_chat_history()
-    # Filter for this user
-    user_history = [m for m in all_history if m.get('user_id') == user_id]
+    
+    # Filter by user AND session_id (if provided)
+    # If no session_id provided, return messages with NO session_id (legacy)
+    if session_id:
+        user_history = [m for m in all_history if m.get('user_id') == user_id and m.get('session_id') == session_id]
+    else:
+        user_history = [m for m in all_history if m.get('user_id') == user_id and not m.get('session_id')]
+        
     return jsonify(user_history)
 
 @app.route("/send_message", methods=["POST"])
 def send_message():
     ensure_storage()
     user_id = auto_login_user_from_cookies(request)
-    if not user_id:
-        # If testing without login, maybe generate a temp ID?
-        # But let's enforce login for "proper" app.
-        return "Unauthorized", 401
+    if not user_id: return "Unauthorized", 401
         
     text = request.form.get("text", "")
-    # Handle image upload if any (future feature, for now just text input)
+    session_id = request.form.get("session_id")
     
-    if not text:
-        return "No text provided", 400
+    if not text: return "No text provided", 400
 
-    # Save user message
+    # Auto-create session if not provided? No, frontend should handle.
+    # But for robustness, if session_id is missing, treat as legacy.
+
     msg_id = str(uuid.uuid4())
     user_msg = {
         "id": msg_id,
         "user_id": user_id,
+        "session_id": session_id,
         "role": "user",
         "text": text,
         "time": datetime.utcnow().isoformat() + "Z"
@@ -304,21 +407,26 @@ def send_message():
     history.append(user_msg)
     save_chat_history(history)
     
-    # Generate response
-    # Simple intent classification
+    # Update session title if it's the first message
+    if session_id:
+        sessions = load_sessions()
+        for s in sessions:
+            if s.get("id") == session_id and s.get("title") == "New Chat":
+                # Simple title generation: first 5 words
+                new_title = " ".join(text.split()[:5])
+                s["title"] = new_title
+                save_sessions(sessions)
+                break
+
     intent_keywords = ["design", "plan", "layout", "image", "picture", "photo", "interior", "room"]
     
     bot_text = ""
-    bot_images = []  # Changed from single bot_image to list
+    bot_images = []
     
     try:
         if any(k in text.lower() for k in intent_keywords):
-            # Generate Design JSON
             json_str = generate_design_json(text)
-            
-            # Parse JSON to understand requirements
             try:
-                # Clean up json string if needed (sometimes LLM returns markdown code blocks)
                 clean_json = json_str.replace("```json", "").replace("```", "").strip()
                 design_data = json.loads(clean_json)
             except:
@@ -326,37 +434,29 @@ def send_message():
 
             style = design_data.get("style", "modern")
             rooms = design_data.get("rooms", [])
-            if not rooms:
-                rooms = ["Living Room", "Kitchen", "Bedroom"] # Default if none parsed
+            if not rooms: rooms = ["Living Room", "Kitchen", "Bedroom"]
 
-            # 1. Outer House 3D Structure
             exterior_prompt = f"Professional 3D architectural visualization of a {style} house exterior, photorealistic 8k render, cinematic lighting, architectural photography, detailed textures, landscaped garden, blue sky, wide angle shot"
             try:
                 url = generate_image_from_prompt(exterior_prompt)
                 bot_images.append(url)
-            except Exception as e:
-                print(f"Error generating exterior: {e}")
+            except Exception as e: print(f"Error generating exterior: {e}")
 
-            # 2. 2D Floor Plan
             plan_prompt = f"High quality 2D architectural floor plan of a {style} house, top down view, technical drawing, blueprint style on white background, clear room labels, wall measurements, dimensions in meters and feet, furniture layout, precise lines, high resolution"
             try:
                 url = generate_image_from_prompt(plan_prompt)
                 bot_images.append(url)
-            except Exception as e:
-                print(f"Error generating plan: {e}")
+            except Exception as e: print(f"Error generating plan: {e}")
 
-            # 3. Rooms
             for room in rooms:
                 room_prompt = f"Professional interior design photography of a {style} {room}, award winning interior design, 8k resolution, photorealistic, perfect lighting, detailed furniture, high end finishes, architectural digest style"
                 try:
                     url = generate_image_from_prompt(room_prompt)
                     bot_images.append(url)
-                except Exception as e:
-                    print(f"Error generating {room}: {e}")
+                except Exception as e: print(f"Error generating {room}: {e}")
 
             bot_text = f"Here is the complete design suite for your {style} house, including exterior, floor plan, and room designs."
         else:
-            # Generate Text
             bot_text = generate_text_reply(text)
     except Exception as e:
         bot_text = f"Error processing request: {str(e)}"
@@ -365,9 +465,10 @@ def send_message():
     bot_msg = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
+        "session_id": session_id,
         "role": "bot",
         "text": bot_text,
-        "image_urls": bot_images, # Send list
+        "image_urls": bot_images,
         "time": datetime.utcnow().isoformat() + "Z"
     }
             
@@ -376,16 +477,85 @@ def send_message():
     
     return jsonify({"status": "ok"})
 
+@app.route("/logout")
+def logout():
+    resp = make_response(redirect("/login"))
+    resp.set_cookie("user_id", "", expires=0)
+    resp.set_cookie("device_id", "", expires=0)
+    return resp
+
+@app.route("/get_user_info")
+def get_user_info():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return "Unauthorized", 401
+    
+    users = load_json(USERS_FILE).get("users", [])
+    for u in users:
+        if u["user_id"] == user_id:
+            return jsonify({
+                "username": u.get("username"),
+                "email": u.get("email"),
+                "first": u.get("first"),
+                "last": u.get("last"),
+                "age": u.get("age"),
+                "role": u.get("role")
+            })
+    return "User not found", 404
+
+@app.route("/update_user_info", methods=["POST"])
+def update_user_info():
+    ensure_storage()
+    user_id = auto_login_user_from_cookies(request)
+    if not user_id: return "Unauthorized", 401
+    
+    data = request.get_json(force=True)
+    users_data = load_json(USERS_FILE)
+    users = users_data.get("users", [])
+    
+    for u in users:
+        if u["user_id"] == user_id:
+            # Update allowed fields
+            if "username" in data: u["username"] = data["username"]
+            if "first" in data: u["first"] = data["first"]
+            if "last" in data: u["last"] = data["last"]
+            if "age" in data: u["age"] = data["age"]
+            if "role" in data: u["role"] = data["role"]
+            
+            # Handle password change
+            if "password" in data and data["password"]:
+                u["password_hash"] = hash_password(data["password"])
+                
+            # Email is explicitly NOT updated
+            
+            save_json(USERS_FILE, users_data)
+            return jsonify({"status": "ok"})
+            
+    return "User not found", 404
+
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
     ensure_storage()
     user_id = auto_login_user_from_cookies(request)
-    if not user_id:
-        return "Unauthorized", 401
+    if not user_id: return "Unauthorized", 401
     
+    data = request.get_json(force=True, silent=True) or {}
+    session_id = data.get("session_id")
+
     all_history = load_chat_history()
-    # Keep messages that are NOT from this user
-    new_history = [m for m in all_history if m.get('user_id') != user_id]
+    
+    if session_id:
+        # Remove messages for this session
+        new_history = [m for m in all_history if not (m.get('user_id') == user_id and m.get('session_id') == session_id)]
+        
+        # Also remove session metadata
+        sessions = load_sessions()
+        sessions = [s for s in sessions if not (s.get('id') == session_id and s.get('user_id') == user_id)]
+        save_sessions(sessions)
+    else:
+        # Legacy clear: clear all messages for user
+        new_history = [m for m in all_history if m.get('user_id') != user_id]
+        
     save_chat_history(new_history)
     
     return jsonify({"status": "ok"})

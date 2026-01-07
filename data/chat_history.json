@@ -13,5 +13,22 @@
     "text": "Hello! How can I help you today?",
     "image_urls": [],
     "time": "2026-01-07T16:57:47.605412Z"
+  },
+  {
+    "id": "e6710b7b-ce19-45e3-bc0d-c3f0735bda51",
+    "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+    "session_id": "5576ec18-1446-4e9b-bc98-9b1a5a9050a6",
+    "role": "user",
+    "text": "hi",
+    "time": "2026-01-07T17:40:53.142110Z"
+  },
+  {
+    "id": "1b343d75-62b9-42d4-a0b0-493e0d5240ea",
+    "user_id": "bd89cede-6d12-48fc-a493-6f444d9fdda9",
+    "session_id": "5576ec18-1446-4e9b-bc98-9b1a5a9050a6",
+    "role": "bot",
+    "text": "Hello! \ud83d\udc4b How can I assist you today?",
+    "image_urls": [],
+    "time": "2026-01-07T17:40:56.611175Z"
   }
 ]
